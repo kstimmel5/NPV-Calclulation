@@ -1,0 +1,187 @@
+
+import streamlit as st
+
+# -----------------------------------------
+# 1. Page configuration
+# -----------------------------------------
+
+st.set_page_config(
+    page_title="NPV Calculator",
+    page_icon="💰",
+    layout="centered"
+)
+
+# -----------------------------------------
+# 2. App title and introduction
+# -----------------------------------------
+
+st.title("💰 Net Present Value (NPV) Calculator")
+
+st.write(
+    "Calculate the Net Present Value of an investment "
+    "using its initial cost, future cash flows, and discount rate."
+)
+
+st.divider()
+
+# -----------------------------------------
+# 3. User inputs
+# -----------------------------------------
+
+st.header("Investment Information")
+
+# Initial investment
+initial_investment = st.number_input(
+    "Initial Investment ($)",
+    min_value=0.0,
+    value=10000.0,
+    step=500.0
+)
+
+# Discount rate
+discount_rate = st.number_input(
+    "Discount Rate (%)",
+    min_value=0.0,
+    value=10.0,
+    step=0.5
+)
+
+# Number of cash flow periods
+number_of_years = st.number_input(
+    "Number of Years",
+    min_value=1,
+    max_value=30,
+    value=3,
+    step=1
+)
+
+# -----------------------------------------
+# 4. Future cash flow inputs
+# -----------------------------------------
+
+st.subheader("Expected Future Cash Flows")
+
+cash_flows = []
+
+# Create an input box for each year
+for year in range(1, int(number_of_years) + 1):
+
+    cash_flow = st.number_input(
+        f"Cash Flow - Year {year} ($)",
+        value=4000.0,
+        step=500.0,
+        key=f"cash_flow_{year}"
+    )
+
+    cash_flows.append(cash_flow)
+
+st.divider()
+
+# -----------------------------------------
+# 5. Calculate NPV
+# -----------------------------------------
+
+# Convert percentage into decimal
+rate = discount_rate / 100
+
+# Start with the initial investment as a negative amount
+npv = -initial_investment
+
+# Discount each future cash flow to its present value
+for year, cash_flow in enumerate(cash_flows, start=1):
+
+    present_value = cash_flow / ((1 + rate) ** year)
+
+    # Add discounted cash flow to NPV
+    npv += present_value
+
+# -----------------------------------------
+# 6. Display NPV result
+# -----------------------------------------
+
+st.header("NPV Results")
+
+st.metric(
+    label="Net Present Value",
+    value=f"${npv:,.2f}"
+)
+
+# -----------------------------------------
+# 7. Display investment decision
+# -----------------------------------------
+
+if npv > 0.005:
+
+    st.success(
+        "GOOD PROJECT: The investment creates value. "
+        "The NPV is positive."
+    )
+
+elif npv < -0.005:
+
+    st.error(
+        "BAD PROJECT: The investment destroys value. "
+        "The NPV is negative."
+    )
+
+else:
+
+    st.info(
+        "BREAK-EVEN PROJECT: The NPV is approximately zero."
+    )
+
+# -----------------------------------------
+# 8. Display the formula
+# -----------------------------------------
+
+st.divider()
+
+st.header("NPV Formula Used")
+
+st.latex(
+    r"NPV=-I_0+\sum_{t=1}^{n}\frac{CF_t}{(1+r)^t}"
+)
+
+st.write("Where:")
+
+st.write("""
+- **I₀:** Initial investment
+- **CF:** Future cash flow
+- **r:** Discount rate
+- **t:** Year or time period
+- **n:** Total number of years
+""")
+
+# -----------------------------------------
+# 9. Show calculation breakdown
+# -----------------------------------------
+
+st.subheader("Cash Flow Breakdown")
+
+total_present_value = 0
+
+for year, cash_flow in enumerate(cash_flows, start=1):
+
+    present_value = cash_flow / ((1 + rate) ** year)
+
+    total_present_value += present_value
+
+    st.write(
+        f"Year {year}: ${cash_flow:,.2f} "
+        f"÷ (1 + {rate:.2%})^{year} "
+        f"= ${present_value:,.2f}"
+    )
+
+st.write(f"**Total Present Value: ${total_present_value:,.2f}**")
+
+st.write(f"**Initial Investment: ${initial_investment:,.2f}**")
+
+st.write(f"**Final NPV: ${npv:,.2f}**")
+
+# -----------------------------------------
+# 10. Footer
+# -----------------------------------------
+
+st.divider()
+
+st.caption("NPV Calculator | Built with Python and Streamlit")
